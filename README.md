@@ -26,18 +26,14 @@ npm --version   # Should show 9+ or 10+
 ## Cross-Platform Setup Process
 
 ### Windows
-- Use `setup-bitwarden-sdk.ps1` with PowerShell 7+ (or follow manual steps below)
-- Install dependencies with `winget`:
-   - .NET SDK: `winget install Microsoft.DotNet.SDK.8`
-   - Rust: `winget install Rustlang.Rust.MSVC`
-   - Node.js: `winget install OpenJS.NodeJS`
+- Use the PowerShell setup script: `setup-bitwarden-sdk.ps1` (requires PowerShell 7+)
+- This script automates installation using `winget` and builds the .NET SDK version.
+- Manual steps are also available if you prefer.
 
 ### WSL / Linux
-- Use the Python setup script for automated setup:
-   ```zsh
-   python3 setup-bitwarden-sdk.py --sdk-path ~/bitwarden-sdk
-   ```
-- Or follow manual steps:
+- Use the Python setup script: `setup-bitwarden-sdk.py` (requires Python 3)
+- This script automates installation and builds the SDK for Linux environments.
+- Manual steps are also available if you prefer.
    - **.NET SDK:**
       - Try: `sudo apt-get install dotnet-sdk-8.0`
       - If errors, use official script:
@@ -126,21 +122,52 @@ After completing the setup:
 
 ### Using the Bitwarden CLI (bws)
 
+#### Set your access token
+```zsh
+export BWS_ACCESS_TOKEN="your-access-token-here"
+```
+
+#### List projects (Linux/WSL)
+```zsh
+/home/keith/bitwarden-sdk/target/release/bws project list
+```
+
+#### Create a secret with OAuth 2.0 Client Credentials (Python example)
+```python
+import subprocess
+import json
+
+api_key = {
+   "client_id": "your-client-id",
+   "client_secret": "your-client-secret",
+   "scope": "api",
+   "grant_type": "client_credentials"
+}
+
+secret_value = json.dumps(api_key)
+cli_path = "/home/keith/bitwarden-sdk/target/release/bws"  # Linux binary
+project_id = "fc280c0b-1d9c-4789-b5ff-b3810133de43"  # Example project ID
+subprocess.run([
+   cli_path,
+   "secret", "create", "BitwardenAPI", secret_value, project_id
+])
+```
+
+#### Create a secret (PowerShell example, Windows)
 ```powershell
-# Set your access token
-$env:BWS_ACCESS_TOKEN = "your-access-token-here"
+$apiKey = @{
+   client_id = "your-client-id"
+   client_secret = "your-client-secret"
+   scope = "api"
+   grant_type = "client_credentials"
+} | ConvertTo-Json
 
-# List projects
-.\bws.exe project list
+& "C:\Projects\bitwarden-sdk\target\release\bws.exe" secret create "BitwardenAPI" $apiKey "your-project-id"
+```
 
-# List secrets
-.\bws.exe secret list
-
-# Create a secret
-.\bws.exe secret create "MySecret" "SecretValue"
-
-# Run application with secrets as environment variables
-.\bws.exe run -- dotnet run
+#### Run application with secrets as environment variables
+```zsh
+/home/keith/bitwarden-sdk/target/release/bws run -- your-app-command
 ```
 
 ### Using the C# SDK

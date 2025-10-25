@@ -4,6 +4,58 @@ Common issues and solutions when setting up the Bitwarden SDK.
 
 ## 🚨 Build and Setup Issues
 
+### Issue: CLI binary not found or not executable
+
+**Symptoms:**
+- `bws.exe` not found on Linux/WSL
+- `zsh: command not found: bws` or `bws.exe`
+
+**Solution:**
+1. On Linux/WSL, the CLI binary is named `bws` (not `bws.exe`).
+2. Use the full path to run the CLI:
+   ```zsh
+   /home/keith/bitwarden-sdk/target/release/bws --help
+   ```
+3. Add the CLI directory to your PATH for convenience:
+   ```zsh
+   export PATH="$PATH:/home/keith/bitwarden-sdk/target/release"
+   ```
+4. If the binary is missing, build it:
+   ```zsh
+   cd /home/keith/bitwarden-sdk/crates/bws
+   cargo build --release
+   ```
+
+### Issue: Project ID not found or 404 error when creating secrets
+
+**Symptoms:**
+- Error: `[404 Not Found] {"message":"Resource not found." ...}`
+
+**Solution:**
+1. Ensure you are using a valid project ID from your Bitwarden organization. You can find it in the web vault or by running:
+   ```zsh
+   /home/keith/bitwarden-sdk/target/release/bws project list
+   ```
+2. Example project ID: `fc280c0b-1d9c-4789-b5ff-b3810133de43`
+3. Your access token must have permissions for the organization and project.
+4. Example Python command to create a secret:
+   ```python
+   import subprocess, json
+   api_key = {
+       "client_id": "your-client-id",
+       "client_secret": "your-client-secret",
+       "scope": "api",
+       "grant_type": "client_credentials"
+   }
+   secret_value = json.dumps(api_key)
+   cli_path = "/home/keith/bitwarden-sdk/target/release/bws"
+   project_id = "fc280c0b-1d9c-4789-b5ff-b3810133de43"
+   subprocess.run([
+       cli_path,
+       "secret", "create", "BitwardenAPI", secret_value, project_id
+   ])
+   ```
+
 ### Issue: "Failed to find all versions of .NET Core MSBuild" (Windows, WSL, Linux)
 
 **Symptoms:**
