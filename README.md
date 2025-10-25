@@ -1,3 +1,100 @@
+# Bitwarden Secrets Manager CLI Usage & Troubleshooting
+
+## Authentication
+
+You must authenticate every CLI command using an access token. You can set the environment variable:
+
+```zsh
+export BWS_ACCESS_TOKEN="your-access-token"
+```
+
+Or pass the token directly to commands:
+
+```
+bws secret create --access-token <ACCESS_TOKEN> <KEY> <VALUE> <PROJECT_ID>
+```
+
+## Secret Creation
+
+The correct command format is:
+
+```
+bws secret create [--access-token <ACCESS_TOKEN>] <KEY> <VALUE> <PROJECT_ID>
+```
+
+Optionally, you can add a note:
+
+```
+bws secret create --access-token <ACCESS_TOKEN> <KEY> <VALUE> <PROJECT_ID> --note "API Key for XYZ"
+```
+
+## Project Management
+
+List projects you have access to:
+
+```
+bws project list --access-token <ACCESS_TOKEN>
+```
+
+Create a new project:
+
+```
+
+## Project Permissions and Machine Accounts
+
+**Important:** If you receive `Resource not found (404)` errors when creating secrets, your machine account (the one associated with your access token) may not have access to the target Bitwarden project. You must explicitly add the project to the machine account in the Bitwarden web vault or organization settings.
+
+**Steps to resolve:**
+1. Go to your Bitwarden web vault.
+2. Navigate to your organization and select the target project.
+3. Add your machine account (or service account) as a member of the project.
+4. Ensure your access token is generated for the correct account and organization.
+5. Retry your CLI or SDK operation.
+
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for more details.
+bws project create --access-token <ACCESS_TOKEN> "My Project"
+```
+
+## Secret Listing
+
+List all secrets:
+
+```
+bws secret list --access-token <ACCESS_TOKEN>
+```
+
+List secrets for a specific project:
+
+```
+bws secret list --access-token <ACCESS_TOKEN> <PROJECT_ID>
+```
+
+## Troubleshooting
+
+- If you get "Resource not found" errors, check:
+   - The project ID is valid and accessible to your access token.
+   - Your access token has the correct permissions.
+- If you get rate limit errors, add delays between requests.
+
+## Other Useful Commands
+
+Get help for any command:
+
+```
+bws --help
+bws secret --help
+bws project --help
+```
+
+Check your CLI version:
+
+```
+bws --version
+```
+
+## Reference
+
+See the [Bitwarden Secrets Manager CLI Documentation](https://bitwarden.com/help/secrets-manager-cli/) for full details.
 # Bitwarden SDK Setup Guide
 
 A comprehensive guide for setting up and using the Bitwarden Secrets Manager SDK on Windows, with solutions to common build issues.

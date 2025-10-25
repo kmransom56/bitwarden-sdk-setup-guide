@@ -1,3 +1,55 @@
+# Bitwarden CLI Troubleshooting
+
+## Authentication
+
+Always authenticate CLI commands using an access token:
+
+```zsh
+export BWS_ACCESS_TOKEN="your-access-token"
+```
+Or pass the token directly:
+```
+bws secret create --access-token <ACCESS_TOKEN> <KEY> <VALUE> <PROJECT_ID>
+```
+
+## Common Errors
+
+- **Resource not found (404):**
+   - Check your project ID is valid and accessible to your access token.
+   - Ensure your access token has permission for the project.
+- **Rate limit (429):**
+   - Add delays between requests (e.g., `time.sleep(1)` in scripts).
+- **Command not found:**
+   - Add the CLI binary to your $PATH.
+   - Example: `export PATH="$PATH:/home/keith/bitwarden-sdk/target/release"`
+
+## CLI Syntax
+
+Secret creation:
+```
+bws secret create --access-token <ACCESS_TOKEN> <KEY> <VALUE> <PROJECT_ID>
+```
+Project listing:
+```
+bws project list --access-token <ACCESS_TOKEN>
+```
+Project creation:
+```
+bws project create --access-token <ACCESS_TOKEN> "My Project"
+```
+
+## Useful Commands
+
+Get help:
+```
+bws --help
+bws secret --help
+bws project --help
+```
+Check CLI version:
+```
+bws --version
+```
 # Troubleshooting Guide
 
 Common issues and solutions when setting up the Bitwarden SDK.
@@ -26,35 +78,43 @@ Common issues and solutions when setting up the Bitwarden SDK.
    cargo build --release
    ```
 
-### Issue: Project ID not found or 404 error when creating secrets
+
+### Issue: Project Permissions for Machine Accounts (404 errors)
 
 **Symptoms:**
 - Error: `[404 Not Found] {"message":"Resource not found." ...}`
+- All secret creation attempts fail, even with a valid project ID and access token.
+
+**Root Cause:**
+The machine account (associated with your access token) does not have access to the target Bitwarden project. This is a common scenario when using service accounts or automation tokens.
 
 **Solution:**
-1. Ensure you are using a valid project ID from your Bitwarden organization. You can find it in the web vault or by running:
-   ```zsh
-   /home/keith/bitwarden-sdk/target/release/bws project list
-   ```
-2. Example project ID: `fc280c0b-1d9c-4789-b5ff-b3810133de43`
-3. Your access token must have permissions for the organization and project.
-4. Example Python command to create a secret:
-   ```python
-   import subprocess, json
-   api_key = {
-       "client_id": "your-client-id",
-       "client_secret": "your-client-secret",
-       "scope": "api",
-       "grant_type": "client_credentials"
-   }
-   secret_value = json.dumps(api_key)
-   cli_path = "/home/keith/bitwarden-sdk/target/release/bws"
-   project_id = "fc280c0b-1d9c-4789-b5ff-b3810133de43"
-   subprocess.run([
-       cli_path,
-       "secret", "create", "BitwardenAPI", secret_value, project_id
-   ])
-   ```
+1. Go to your Bitwarden web vault.
+2. Navigate to your organization and select the target project.
+3. Add your machine account (or service account) as a member of the project.
+4. Ensure your access token is generated for the correct account and organization.
+5. Retry your CLI or SDK operation.
+
+**Example Fix:**
+If you see repeated 404 errors, check project membership for your machine account. Once added, secret creation should succeed.
+
+**Example Python command to create a secret:**
+```python
+import subprocess, json
+api_key = {
+   "client_id": "your-client-id",
+   "client_secret": "your-client-secret",
+   "scope": "api",
+   "grant_type": "client_credentials"
+}
+secret_value = json.dumps(api_key)
+cli_path = "/home/keith/bitwarden-sdk/target/release/bws"
+project_id = "fc280c0b-1d9c-4789-b5ff-b3810133de43"
+subprocess.run([
+   cli_path,
+   "secret", "create", "BitwardenAPI", secret_value, project_id
+])
+```
 
 ### Issue: "Failed to find all versions of .NET Core MSBuild" (Windows, WSL, Linux)
 

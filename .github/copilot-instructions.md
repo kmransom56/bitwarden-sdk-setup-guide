@@ -53,6 +53,16 @@ This repository is a setup and troubleshooting guide for the Bitwarden Secrets M
 - Run `dotnet build` in `languages/csharp` (expect "Build succeeded")
 - Run CLI tool: `target/release/bws.exe --help`
 
+
+## Project Permissions and Machine Accounts
+- If you receive `Resource not found (404)` errors when creating secrets, your machine account (the one associated with your access token) may not have access to the target Bitwarden project. You must explicitly add the project to the machine account in the Bitwarden web vault or organization settings.
+- Steps to resolve:
+  1. Go to your Bitwarden web vault.
+  2. Navigate to your organization and select the target project.
+  3. Add your machine account (or service account) as a member of the project.
+  4. Ensure your access token is generated for the correct account and organization.
+  5. Retry your CLI or SDK operation.
+
 ## Patterns & Conventions
 - **Environment Variables:**
   - `BWS_ACCESS_TOKEN` and `BWS_SERVER_URL` required for CLI/SDK usage
