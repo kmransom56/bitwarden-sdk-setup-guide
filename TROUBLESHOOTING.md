@@ -4,7 +4,7 @@ Common issues and solutions when setting up the Bitwarden SDK.
 
 ## 🚨 Build and Setup Issues
 
-### Issue: "Failed to find all versions of .NET Core MSBuild"
+### Issue: "Failed to find all versions of .NET Core MSBuild" (Windows, WSL, Linux)
 
 **Symptoms:**
 ```
@@ -13,31 +13,60 @@ Failed to find all versions of .NET Core MSBuild. Call to hostfxr_resolve_sdk2.
 ```
 
 **Solution:**
-1. Install .NET 8.0 SDK (not just runtime):
+1. **Windows:** Install .NET 8.0 SDK (not just runtime):
    ```powershell
    winget install Microsoft.DotNet.SDK.8
    ```
-2. Restart VS Code
-3. Verify installation:
-   ```powershell
+2. **WSL/Linux:**
+   - Use the Python setup script for automated setup:
+     ```zsh
+     python3 setup-bitwarden-sdk.py --sdk-path ~/bitwarden-sdk
+     ```
+   - Or try: `sudo apt-get install dotnet-sdk-8.0`
+   - If errors (conflicts, held packages):
+     ```zsh
+     wget https://dot.net/v1/dotnet-install.sh
+     chmod +x dotnet-install.sh
+     ./dotnet-install.sh --version 8.0.100
+     export PATH="$HOME/.dotnet:$PATH"
+     ```
+3. Restart VS Code
+4. Verify installation:
+   ```zsh
    dotnet --list-sdks  # Should show 8.0.x
    ```
 
-### Issue: "cargo: The term 'cargo' is not recognized"
+### Issue: "cargo: The term 'cargo' is not recognized" or permission denied during Rust install
 
 **Symptoms:**
 - Rust build commands fail
 - `cargo` command not found
+- Permission denied errors for `~/.cargo/bin`
 
 **Solution:**
-1. Install Rust:
-   ```powershell
-   winget install Rustlang.Rust.MSVC
-   ```
-2. Add to PATH for current session:
-   ```powershell
-   $env:PATH += ";C:\Program Files\Rust stable MSVC 1.90\bin"
-   ```
+1. **Windows:**
+    - Install Rust:
+       ```powershell
+       winget install Rustlang.Rust.MSVC
+       ```
+    - Add to PATH for current session:
+       ```powershell
+       $env:PATH += ";C:\Program Files\Rust stable MSVC 1.90\bin"
+       ```
+2. **WSL/Linux:**
+    - Install Rust:
+       ```zsh
+       curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+       ```
+    - If you see `Permission denied` for `~/.cargo/bin`, run:
+       ```zsh
+       sudo rm -rf ~/.cargo ~/.rustup
+       curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+       ```
+    - Add to PATH:
+       ```zsh
+       source $HOME/.cargo/env
+       ```
 3. Restart terminal/VS Code
 
 ### Issue: C# build errors about missing types (SecretResponse, ProjectResponse, etc.)

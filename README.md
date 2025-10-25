@@ -21,58 +21,52 @@ Before starting, ensure you have:
 - Internet connection for downloading dependencies
 
 ## 🛠️ Complete Setup Process
-
-### Step 1: Install .NET 8.0 SDK
-
-The Bitwarden SDK requires .NET 8.0 SDK (not just runtime):
-
-```powershell
-# Option 1: Using winget (recommended)
-winget install Microsoft.DotNet.SDK.8
-
-# Option 2: Manual download
-# Visit: https://dotnet.microsoft.com/download/dotnet/8.0
-# Download ".NET 8.0 SDK" (not just runtime)
-```
-
-**Verify installation:**
-```powershell
-dotnet --version  # Should show 8.0.x
-dotnet --list-sdks  # Should include 8.0.x
-```
-
-### Step 2: Install Rust Toolchain
-
-The SDK includes Rust components that need to be built:
-
-```powershell
-# Using winget
-winget install Rustlang.Rust.MSVC
-
-# Add Rust to PATH for current session (if needed)
-$env:PATH += ";C:\Program Files\Rust stable MSVC 1.90\bin"
-```
-
-**Verify installation:**
-```powershell
-cargo --version  # Should show 1.90.0 or later
-rustc --version  # Should show Rust version
-```
-
-### Step 3: Install Node.js (for schema generation)
-
-```powershell
-# Using winget
-winget install OpenJS.NodeJS
-
-# Or download from: https://nodejs.org/
-```
-
-**Verify installation:**
-```powershell
-node --version  # Should show v18+ or v20+
 npm --version   # Should show 9+ or 10+
-```
+
+## Cross-Platform Setup Process
+
+### Windows
+- Use `setup-bitwarden-sdk.ps1` with PowerShell 7+ (or follow manual steps below)
+- Install dependencies with `winget`:
+   - .NET SDK: `winget install Microsoft.DotNet.SDK.8`
+   - Rust: `winget install Rustlang.Rust.MSVC`
+   - Node.js: `winget install OpenJS.NodeJS`
+
+### WSL / Linux
+- Use the Python setup script for automated setup:
+   ```zsh
+   python3 setup-bitwarden-sdk.py --sdk-path ~/bitwarden-sdk
+   ```
+- Or follow manual steps:
+   - **.NET SDK:**
+      - Try: `sudo apt-get install dotnet-sdk-8.0`
+      - If errors, use official script:
+         ```zsh
+         wget https://dot.net/v1/dotnet-install.sh
+         chmod +x dotnet-install.sh
+         ./dotnet-install.sh --version 8.0.100
+         export PATH="$HOME/.dotnet:$PATH"
+         ```
+   - **Rust:**
+      - Install: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+      - If permission denied, remove old dirs: `sudo rm -rf ~/.cargo ~/.rustup` and retry
+      - Add to PATH: `source $HOME/.cargo/env`
+   - **Node.js:**
+      - Install: `sudo apt-get install nodejs npm`
+      - For latest: use nvm or NodeSource
+
+### Common Steps (All Platforms)
+1. Run `npm install`
+2. Run `npm run schemas` (generates C# types)
+3. Build Rust components:
+    - `cd crates/bitwarden-c && cargo build --release`
+4. Build C# SDK:
+    - `cd languages/csharp && dotnet restore && dotnet build`
+5. Restart VS Code if MSBuild errors persist
+
+### Verification
+- Run `dotnet build` in `languages/csharp` (expect "Build succeeded")
+- Run CLI tool: `target/release/bws.exe --help`
 
 ### Step 4: Download and Setup Bitwarden SDK
 
