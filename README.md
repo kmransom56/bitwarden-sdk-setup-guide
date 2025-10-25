@@ -40,16 +40,48 @@ Create a new project:
 
 ```
 
-## Project Permissions and Machine Accounts
 
-**Important:** If you receive `Resource not found (404)` errors when creating secrets, your machine account (the one associated with your access token) may not have access to the target Bitwarden project. You must explicitly add the project to the machine account in the Bitwarden web vault or organization settings.
+## Using Your Vault in Applications
 
-**Steps to resolve:**
-1. Go to your Bitwarden web vault.
-2. Navigate to your organization and select the target project.
-3. Add your machine account (or service account) as a member of the project.
-4. Ensure your access token is generated for the correct account and organization.
-5. Retry your CLI or SDK operation.
+You can retrieve secrets from your Bitwarden vault in your applications using the CLI, Python, PowerShell, or SDKs.
+
+### Python Example
+See `examples/get_secret.py`:
+```python
+import subprocess
+import os
+SECRET_KEY = "OPENAI_API_KEY"
+PROJECT_ID = "fc280c0b-1d9c-4789-b5ff-b3810133de43"
+ACCESS_TOKEN = os.environ.get("BWS_ACCESS_TOKEN")
+cmd = ["bws", "secret", "get", "--access-token", ACCESS_TOKEN, SECRET_KEY, PROJECT_ID]
+result = subprocess.run(cmd, capture_output=True, text=True)
+print(result.stdout.strip())
+```
+
+### PowerShell Example
+See `examples/get_secret.ps1`:
+```powershell
+param(
+   [string]$SecretKey = "OPENAI_API_KEY",
+   [string]$ProjectId = "fc280c0b-1d9c-4789-b5ff-b3810133de43"
+)
+if (-not $env:BWS_ACCESS_TOKEN) { Write-Error "BWS_ACCESS_TOKEN not set"; exit 1 }
+$result = bws secret get --access-token $env:BWS_ACCESS_TOKEN $SecretKey $ProjectId
+Write-Output $result
+```
+
+### CLI Usage
+```zsh
+bws secret get --access-token $BWS_ACCESS_TOKEN <KEY> <PROJECT_ID>
+```
+
+### SDK Usage (C# Example)
+```csharp
+using Bitwarden.SecretsManager;
+var client = new SecretsManagerClient("your-access-token");
+var secret = await client.GetSecretAsync("OPENAI_API_KEY", "fc280c0b-1d9c-4789-b5ff-b3810133de43");
+Console.WriteLine(secret.Value);
+```
 
 See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for more details.
 bws project create --access-token <ACCESS_TOKEN> "My Project"
